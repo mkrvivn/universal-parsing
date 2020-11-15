@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 #include "move_wrapper.h"
+#include "exception.h"
 namespace serializer
 {
 
@@ -31,69 +33,71 @@ namespace serializer
     typedef std::shared_ptr<SArray> ArrayPtr;
     typedef std::shared_ptr<SDict> DictPtr;
 
-    typedef std::vector<SObj> ArrayVector;
-    typedef std::map<StringPtr, SObj> DictMap;
-
-    typedef std::shared_ptr<ArrayVector> VectorPtr;
-    typedef std::shared_ptr<DictMap> MapPtr;
 
 
-
-    typedef std::variant<IntPtr, StringPtr, ArrayPtr, DictPtr> SData;
+    typedef std::variant<SInt, SString, SArray, SDict> SData;
 
     class SInt
     {
     public:
-        ~SInt() {std::cout << "deleted int" << std::endl;}
+        ~SInt(){std::cout << "int delited" << std::endl;}
+        SInt(){};
         SInt(int val);
         std::string encode() const;
+        operator int() const;
+        int getValue();
     private:
-        mutable std::string _cache;
         int _value;
-    private:
-        std::string cache() const;
     };
 
     class SString
     {
     public:
-        ~SString() {std::cout << "deleted string" << std::endl;}
+        ~SString(){std::cout << "string delited" << std::endl;}
+        SString(){};
         SString(std::string val);
         std::string encode() const;
-        bool operator<(const SString& rhs) const
+        operator std::string() const;
+        std::string getValue();
+        bool operator==(const SString& rhs) const
         {
-            return _value < rhs._value;
+            return *_value == *rhs._value;
         }
+        struct hash{
+            size_t operator()(const SString& val) const {
+                return std::hash<std::string>()(*val._value);
+            }
+        };
     private:
-        mutable std::string _cache;
-        std::string _value;
-    private:
-        std::string cache() const;
+        std::shared_ptr<std::string> _value;
     };
+
+    typedef std::vector<SObj> ArrayVector;
+    typedef std::unordered_map<SString, SObj, SString::hash> DictMap;
+
+    typedef std::shared_ptr<ArrayVector> VectorPtr;
+    typedef std::shared_ptr<DictMap> MapPtr;
 
     class SArray
     {
     public:
+        SArray(){};
         SArray(std::shared_ptr<std::vector<SObj>> val);
         std::string encode() const;
-        SObj operator[](int pos);
+        SObj& operator[](int pos);
     private:
-        mutable std::string _cache;
         VectorPtr _value;
-    private:
-        std::string cache() const;
     };
 
     class SDict
     {
     public:
+        SDict(){};
         SDict(MapPtr val);
         std::string encode() const;
+        SObj& operator[](const char* key);
     private:
-        mutable std::string _cache;
         MapPtr _value;
-    private:
-        std::string cache() const;
     };
 
     enum class Type
@@ -107,13 +111,22 @@ namespace serializer
     };
 
     typedef std::shared_ptr<SObj> ObjPtr;
-    class SObj : public SValue
+    class SObj
     {
     public:
+        SObj(){};
         SObj(int val);
         SObj(const char* val);
         SObj(std::initializer_list<SObj> il);
-        std::string encode() const override;
+        std::string encode() const;
+        SObj& operator[](int pos);
+        SObj& operator[](const char* key);
+        operator int() const;
+        operator std::string() const;
+        operator SInt() const;
+        operator SString() const;
+        operator SArray() const;
+        operator SDict() const;
     private:
         Type _type;
         mutable std::string _cache;

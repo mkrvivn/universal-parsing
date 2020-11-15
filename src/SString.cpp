@@ -7,18 +7,19 @@
 namespace serializer
 {
     std::string SString::encode() const {
-        if(_cache.empty())
-        {
-            _cache = cache();
-        }
-        return _cache;
-    }
-
-    std::string SString::cache() const {
         std::stringstream ss;
-        ss << std::to_string(_value.size()) << ":" << _value;
+        ss << std::to_string(_value->size()) << ":" << *_value;
         return ss.str();
     }
 
-    SString::SString(std::string val): _value(val) {}
+    std::string SString::getValue() {
+        return *_value;
+    }
+
+    SString::SString(std::string val): _value(std::make_shared<std::string>(val)) {
+    }
+
+    SString::operator std::string () const {
+        return *_value;
+    }
 }

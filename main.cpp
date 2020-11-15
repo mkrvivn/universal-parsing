@@ -1,7 +1,13 @@
 #include <iostream>
 #include "bencode.h"
 int main() {
-    serializer::SObj o = {{"a", 1}, {"b", 2}, {"b", 2}, {"b", 2}, {"a", {1,2 ,3 ,4, 5, 6, 7}}};
-    std::cout << o.encode() << std::endl;
+    serializer::SObj o{
+            {"a", {1, 2, 3}},
+            {"b", {1, 2, 3}}
+    };
+    std::cout << "object creation end" << std::endl;
+    serializer::SArray a = o["b"];
+    std::cout << "element access end" << std::endl;
+    std::cout << a.encode() << std::endl;
     return 0;
 }
