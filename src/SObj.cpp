@@ -33,13 +33,8 @@ namespace serializer
                     MapPtr map = std::make_shared<DictMap>();
                     for(auto i : il)
                     {
-                        try {
-                            SArray arr = std::get<SArray>(i._value);
-                            map->emplace(std::get<SString>(arr[0]._value), arr[1]); //!!!!!!!!!!!!!!!
-                        } catch (...) {
-                            std::cout << "wrong type";
-                            exit(0);
-                        }
+                        SArray arr = std::get<SArray>(i._value);
+                        map->emplace(std::get<SString>(arr[0]._value), arr[1]); //!!!!!!!!!!!!!!!
                     }
                     _value = SDict(map);
                     _type = Type::Dict;
@@ -61,22 +56,11 @@ namespace serializer
 
     }
 
-    std::string SObj::cache() const {
-        std::stringstream ss;
-        ss << std::visit([](auto&& item){return item.encode();}, _value);
-        return ss.str();
-    }
-
-    std::string SObj::encode() const {
-        if(_cache.empty())
-        {
-            _cache = cache();
-        }
-        return _cache;
+    SData SObj::getValue() const {
+        return _value;
     }
 
     SObj& SObj::operator[](int pos) {
-        std::cout << "call index [] operator" << std::endl;
         if(_type == Type::Array)
         {
             return std::get<SArray>(_value)[pos];
@@ -86,7 +70,6 @@ namespace serializer
     }
 
     SObj& SObj::operator[](const char* key) {
-        std::cout << "call key [] operator" << std::endl;
         if(_type == Type::Dict)
         {
             return std::get<SDict>(_value)[key];

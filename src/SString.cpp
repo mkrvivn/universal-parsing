@@ -6,13 +6,8 @@
 #include <sstream>
 namespace serializer
 {
-    std::string SString::encode() const {
-        std::stringstream ss;
-        ss << std::to_string(_value->size()) << ":" << *_value;
-        return ss.str();
-    }
 
-    std::string SString::getValue() {
+    std::string& SString::getValue() const {
         return *_value;
     }
 

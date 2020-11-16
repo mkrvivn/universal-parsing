@@ -11,8 +11,46 @@
 #include <map>
 #include <unordered_map>
 #include <iostream>
-#include "move_wrapper.h"
 #include "exception.h"
+#include <sstream>
+#include <string>
+namespace parser
+{
+    class BencodeParser;
+    class JsonParser;
+}
+
+namespace serializer
+{
+    class SInt;
+    class SString;
+    class SArray;
+    class SDict;
+    class SObj;
+}
+
+namespace parser
+{
+    struct BencodeParser
+    {
+        using SelfType = BencodeParser;
+        static std::string IntToText(serializer::SInt i);
+        static std::string StringToText(serializer::SString str);
+        static std::string ArrayToText(serializer::SArray str);
+        static std::string DictToText(serializer::SDict str);
+        static std::string ObjToText(serializer::SObj obj);
+    };
+    struct JsonParser
+    {
+        using SelfType = JsonParser;
+        static std::string IntToText(serializer::SInt i);
+        static std::string StringToText(serializer::SString str);
+        static std::string ArrayToText(serializer::SArray str);
+        static std::string DictToText(serializer::SDict str);
+        static std::string ObjToText(serializer::SObj obj);
+    };
+}
+
 namespace serializer
 {
 
@@ -22,11 +60,6 @@ namespace serializer
         virtual std::string encode() const = 0;
     };
 
-    class SInt;
-    class SString;
-    class SArray;
-    class SDict;
-    class SObj;
 
     typedef std::shared_ptr<SInt> IntPtr;
     typedef std::shared_ptr<SString> StringPtr;
@@ -40,12 +73,12 @@ namespace serializer
     class SInt
     {
     public:
-        ~SInt(){std::cout << "int delited" << std::endl;}
         SInt(){};
         SInt(int val);
+        template<class Parser>
         std::string encode() const;
         operator int() const;
-        int getValue();
+        int getValue() const;
     private:
         int _value;
     };
@@ -53,12 +86,12 @@ namespace serializer
     class SString
     {
     public:
-        ~SString(){std::cout << "string delited" << std::endl;}
         SString(){};
         SString(std::string val);
+        template<class Parser>
         std::string encode() const;
         operator std::string() const;
-        std::string getValue();
+        std::string& getValue() const;
         bool operator==(const SString& rhs) const
         {
             return *_value == *rhs._value;
@@ -83,7 +116,9 @@ namespace serializer
     public:
         SArray(){};
         SArray(std::shared_ptr<std::vector<SObj>> val);
+        template<class Parser>
         std::string encode() const;
+        VectorPtr getValue() const;
         SObj& operator[](int pos);
     private:
         VectorPtr _value;
@@ -94,7 +129,9 @@ namespace serializer
     public:
         SDict(){};
         SDict(MapPtr val);
+        template<class Parser>
         std::string encode() const;
+        MapPtr getValue() const;
         SObj& operator[](const char* key);
     private:
         MapPtr _value;
@@ -111,6 +148,7 @@ namespace serializer
     };
 
     typedef std::shared_ptr<SObj> ObjPtr;
+
     class SObj
     {
     public:
@@ -118,9 +156,11 @@ namespace serializer
         SObj(int val);
         SObj(const char* val);
         SObj(std::initializer_list<SObj> il);
+        template<class Parser>
         std::string encode() const;
         SObj& operator[](int pos);
         SObj& operator[](const char* key);
+        SData getValue() const;
         operator int() const;
         operator std::string() const;
         operator SInt() const;
@@ -132,14 +172,46 @@ namespace serializer
         mutable std::string _cache;
         SData _value;
     private:
+        template<class Parser>
         std::string cache() const;
     };
 
+    template<class Parser>
+    std::string SInt::encode() const {
+        return Parser::IntToText(*this);
+    }
+
+    template<class Parser>
+    std::string SString::encode() const {
+        return Parser::StringToText(*this);
+    }
+
+    template<class Parser>
+    std::string SDict::encode() const {
+        return Parser::DictToText(*this);
+    }
+
+    template<class Parser>
+    std::string SArray::encode() const {
+        return Parser::ArrayToText(*this);
+    }
+
+    template<class Parser>
+    std::string SObj::cache() const {
+        return Parser::ObjToText(*this);
+    }
+
+    template<class Parser>
+    std::string SObj::encode() const {
+        if(_cache.empty())
+        {
+            _cache = cache<Parser>();
+        }
+        return _cache;
+    }
 }
 
 
-namespace parser
-{
 
-}
+
 #endif //BENCODE_BENCODE_H
