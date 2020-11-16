@@ -13,7 +13,10 @@ int main() {
                 }}
         };
         k += o["b"][2];
+        char* bencode = "d1:bli1ei2ei3ee1:dd2:abi2e2:aai1ee1:ali1ei2ei3eee";
+        serializer::SObj oo = parser::BencodeParser::parse(bencode);
     std::cout << o.encode<parser::BencodeParser>() << std::endl;
+    std::cout << oo.encode<parser::BencodeParser>() << std::endl;
     auto end = std::chrono::steady_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
     std::cout << elapsed_ms.count() << std::endl;

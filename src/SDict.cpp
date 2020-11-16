@@ -15,4 +15,12 @@ namespace serializer
     MapPtr SDict::getValue() const {
         return _value;
     }
+
+    SDict SDict::createDict() {
+        return SDict(std::make_shared<DictMap>());
+    }
+
+    void SDict::insert(SString s, SObj o) {
+        _value->insert({s, o});
+    }
 }

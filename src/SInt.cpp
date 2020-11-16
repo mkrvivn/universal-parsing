@@ -15,4 +15,8 @@ namespace serializer
     SInt::operator int() const {
         return _value;
     }
+
+    SInt SInt::createInt(int i) {
+        return SInt(i);
+    }
 }

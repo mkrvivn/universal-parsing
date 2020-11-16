@@ -39,6 +39,13 @@ namespace parser
         static std::string ArrayToText(serializer::SArray str);
         static std::string DictToText(serializer::SDict str);
         static std::string ObjToText(serializer::SObj obj);
+        static serializer::SObj parse(char*& ptr);
+    private:
+        static serializer::SObj parseDict(char*& ptr);
+        static serializer::SObj parseArray(char*& ptr);
+        static serializer::SObj parseString(char*& ptr);
+        static serializer::SObj parseInt(char*& ptr);
+
     };
     struct JsonParser
     {
@@ -79,6 +86,7 @@ namespace serializer
         std::string encode() const;
         operator int() const;
         int getValue() const;
+        static SInt createInt(int);
     private:
         int _value;
     };
@@ -96,6 +104,7 @@ namespace serializer
         {
             return *_value == *rhs._value;
         }
+        static SString createString(std::string);
         struct hash{
             size_t operator()(const SString& val) const {
                 return std::hash<std::string>()(*val._value);
@@ -120,6 +129,8 @@ namespace serializer
         std::string encode() const;
         VectorPtr getValue() const;
         SObj& operator[](int pos);
+        void pushBack(SObj);
+        static SArray createArray();
     private:
         VectorPtr _value;
     };
@@ -132,7 +143,9 @@ namespace serializer
         template<class Parser>
         std::string encode() const;
         MapPtr getValue() const;
+        void insert(SString, SObj);
         SObj& operator[](const char* key);
+        static SDict createDict();
     private:
         MapPtr _value;
     };
@@ -155,6 +168,11 @@ namespace serializer
         SObj(){};
         SObj(int val);
         SObj(const char* val);
+        SObj(SData val);
+        SObj(SInt i);
+        SObj(SString s);
+        SObj(SArray a);
+        SObj(SDict d);
         SObj(std::initializer_list<SObj> il);
         template<class Parser>
         std::string encode() const;

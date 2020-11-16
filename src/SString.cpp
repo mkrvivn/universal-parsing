@@ -17,4 +17,8 @@ namespace serializer
     SString::operator std::string () const {
         return *_value;
     }
+
+    SString SString::createString(std::string s) {
+        return SString(s);
+    }
 }

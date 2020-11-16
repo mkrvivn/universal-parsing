@@ -40,5 +40,71 @@ namespace parser
         ss << std::visit([](auto&& item){return item.template encode<SelfType>();}, obj.getValue());
         return ss.str();
     }
+
+    serializer::SObj BencodeParser::parse(char*& ptr) {
+        while(*ptr != '\0')
+        {
+            if(*ptr == 'd')
+            {
+                return parseDict(++ptr);
+            }else if(*ptr == 'l')
+            {
+                return parseArray(++ptr);
+            }else if(*ptr == isdigit(*ptr))
+            {
+                return parseString(++ptr);
+            }else if(*ptr == 'i')
+            {
+                return parseInt(++ptr);
+            }
+        }
+    }
+
+    serializer::SObj BencodeParser::parseDict(char*& ptr) {
+        serializer::SDict d = serializer::SDict::createDict();
+        while(*ptr != 'e')
+        {
+            serializer::SString s = parseString(ptr);
+            serializer::SObj o = parse(ptr);
+            d.insert(s, o);
+        }
+        ptr++;
+        return serializer::SObj(d);
+    }
+
+    serializer::SObj BencodeParser::parseArray(char*& ptr) {
+        serializer::SArray a = serializer::SArray::createArray();
+        while(*ptr != 'e')
+        {
+            serializer::SObj o = parse(ptr);
+            a.pushBack(o);
+        }
+        ptr++;
+        return serializer::SObj(a);
+    }
+
+    serializer::SObj BencodeParser::parseString(char*& ptr) {
+        auto start = ptr;
+        while(*ptr != ':')
+        {
+            ptr++;
+        }
+        int len = std::stoi(std::string(start, ptr - start));
+        ptr++;
+        std::string sub(ptr, len);
+        ptr = ptr + len;
+        return serializer::SString::createString(sub);
+    }
+
+    serializer::SObj BencodeParser::parseInt(char*& ptr) {
+        auto start = ptr;
+        while(*ptr != 'e')
+        {
+            ptr++;
+        }
+        std::string sub(start, ptr - start); //?????
+        ptr++;
+        return serializer::SInt::createInt(std::stoi(sub));
+    }
 }
 

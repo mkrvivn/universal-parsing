@@ -15,4 +15,12 @@ namespace serializer
     VectorPtr SArray::getValue() const {
         return _value;
     }
+
+    SArray SArray::createArray() {
+        return SArray(std::make_shared<ArrayVector>());
+    }
+
+    void SArray::pushBack(SObj o) {
+        _value->push_back(std::move(o));
+    }
 }

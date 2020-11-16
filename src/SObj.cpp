@@ -14,6 +14,16 @@ namespace serializer
 
     SObj::SObj(const char *val) : _value(std::in_place_type<SString>, val), _type(Type::String) {}
 
+    SObj::SObj(SData val) : _value(val) {}
+
+    SObj::SObj(SInt i) : _value(std::in_place_type<SInt>, i), _type(Type::Int){}
+
+    SObj::SObj(SString s) : _value(std::in_place_type<SString>, s), _type(Type::String) {}
+
+    SObj::SObj(SArray a) : _value(std::in_place_type<SArray>, a), _type(Type::Array) {}
+
+    SObj::SObj(SDict d) : _value(std::in_place_type<SDict>, d), _type(Type::Dict) {}
+
     SObj::SObj(std::initializer_list<SObj> il) { // <-!!!!!!!!!!!!!!! SObj or ObjPtr???????????
         try {
             if(il.size() == 2 && il.begin()->_type == Type::String)
