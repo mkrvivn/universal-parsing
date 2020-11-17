@@ -2,10 +2,11 @@
 // Created by pgkg on 14.11.2020.
 //
 
-#include "bencode.h"
+#include "SInt.h"
 #include <sstream>
 namespace serializer
 {
+
     SInt::SInt(int val): _value(val) {}
 
     int SInt::getValue() const {

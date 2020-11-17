@@ -1,12 +1,13 @@
 //
 // Created by pgkg on 14.11.2020.
 //
-
-#include "bencode.h"
+#include "SArray.h"
 #include <sstream>
+#include "SObj.h"
 namespace serializer
 {
-    SArray::SArray(VectorPtr val) : _value(val) {}
+
+    SArray::SArray(VectorPtr val) : _value(std::move(val)) {}
 
     SObj& SArray::operator[](int pos) {
         return (*_value)[pos];

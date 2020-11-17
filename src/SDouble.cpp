@@ -1,10 +1,10 @@
 //
 // Created by pgkg on 17.11.2020.
 //
-#include "bencode.h"
-#include <sstream>
+#include "SDouble.h"
 namespace serializer
 {
+
     SDouble::SDouble(double val) : _value(val) {
 
     }

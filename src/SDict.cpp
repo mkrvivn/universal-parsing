@@ -2,10 +2,13 @@
 // Created by pgkg on 14.11.2020.
 //
 
-#include "bencode.h"
+#include "SDict.h"
 #include <sstream>
+#include <memory>
+#include "SObj.h"
 namespace serializer
 {
+
     SDict::SDict(MapPtr val) : _value(std::move(val))     {}
 
     SObj & SDict::operator[](const char* key) {
@@ -20,7 +23,7 @@ namespace serializer
         return SDict(std::make_shared<DictMap>());
     }
 
-    void SDict::insert(SString s, SObj o) {
+    void SDict::insert(const SString& s, const SObj& o) {
         _value->insert({s, o});
     }
 }

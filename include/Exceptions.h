@@ -1,9 +1,9 @@
 //
-// Created by pgkg on 15.11.2020.
+// Created by pgkg on 18.11.2020.
 //
 
-#ifndef BENCODE_EXCEPTION_H
-#define BENCODE_EXCEPTION_H
+#ifndef BENCODE_EXCEPTIONS_H
+#define BENCODE_EXCEPTIONS_H
 #include <exception>
 class BadType : public std::exception
 {
@@ -12,4 +12,4 @@ class BadType : public std::exception
         return "Wrong access type";
     }
 };
-#endif //BENCODE_EXCEPTION_H
+#endif //BENCODE_EXCEPTIONS_H

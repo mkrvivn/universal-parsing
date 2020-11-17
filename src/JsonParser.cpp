@@ -2,28 +2,29 @@
 // Created by pgkg on 16.11.2020.
 //
 
-#include "bencode.h"
+#include "JsonParser.h"
 #include <limits>
+#include <sstream>
 namespace parser
 {
 
-    std::string JsonParser::BooleanToText(serializer::SBoolean b) {
+    std::string JsonParser::BooleanToText(const serializer::SBoolean& b) {
         return b.getValue() ? "true" : "false";
     }
 
-    std::string JsonParser::IntToText(serializer::SInt i) {
+    std::string JsonParser::IntToText(const serializer::SInt& i) {
         return std::to_string(i.getValue());
     }
 
-    std::string JsonParser::DoubleToText(serializer::SDouble i) {
+    std::string JsonParser::DoubleToText(const serializer::SDouble& i) {
         return std::to_string(i.getValue());
     }
 
-    std::string JsonParser::StringToText(serializer::SString str) {
+    std::string JsonParser::StringToText(const serializer::SString& str) {
         return "\"" + str.getValue() + "\"";
     }
 
-    std::string JsonParser::ArrayToText(serializer::SArray arr) {
+    std::string JsonParser::ArrayToText(const serializer::SArray& arr) {
         std::stringstream ss;
         ss << "[";
         auto end = arr.getValue()->end();
@@ -42,7 +43,7 @@ namespace parser
         return ss.str();
     }
 
-    std::string JsonParser::DictToText(serializer::SDict dict) {
+    std::string JsonParser::DictToText(const serializer::SDict& dict) {
         std::stringstream ss;
         ss << "{";
         auto end = dict.getValue()->end();
@@ -65,7 +66,7 @@ namespace parser
         return ss.str();
     }
 
-    std::string JsonParser::ObjToText(serializer::SObj obj) {
+    std::string JsonParser::ObjToText(const serializer::SObj& obj) {
         std::stringstream ss;
         if(obj.getValue().has_value())
         {

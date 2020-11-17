@@ -1,27 +1,28 @@
 //
 // Created by pgkg on 16.11.2020.
 //
-#include "bencode.h"
+#include "BencodeParser.h"
 #include <cmath>
+#include <sstream>
 namespace parser
 {
-    std::string BencodeParser::BooleanToText(serializer::SBoolean b) {
+    std::string BencodeParser::BooleanToText(const serializer::SBoolean& b) {
         return "";
     }
 
-    std::string BencodeParser::IntToText(serializer::SInt i) {
+    std::string BencodeParser::IntToText(const serializer::SInt& i) {
         return "i" + std::to_string(i.getValue()) + "e";
     }
 
-    std::string BencodeParser::DoubleToText(serializer::SDouble i) {
+    std::string BencodeParser::DoubleToText(const serializer::SDouble& i) {
         return "i" + std::to_string(floor(i.getValue())) + "e";
     }
 
-    std::string BencodeParser::StringToText(serializer::SString str) {
+    std::string BencodeParser::StringToText(const serializer::SString& str) {
         return std::to_string(str.getValue().size()) + ":" + str.getValue();
     }
 
-    std::string BencodeParser::ArrayToText(serializer::SArray arr) {
+    std::string BencodeParser::ArrayToText(const serializer::SArray& arr) {
         std::stringstream ss;
         ss << "l";
         for(serializer::SObj& i : *arr.getValue())
@@ -32,7 +33,7 @@ namespace parser
         return ss.str();
     }
 
-    std::string BencodeParser::DictToText(serializer::SDict dict) {
+    std::string BencodeParser::DictToText(const serializer::SDict& dict) {
         std::stringstream ss;
         ss << "d";
         for(auto& i : *dict.getValue())
@@ -44,7 +45,7 @@ namespace parser
         return ss.str();
     }
 
-    std::string BencodeParser::ObjToText(serializer::SObj obj) {
+    std::string BencodeParser::ObjToText(const serializer::SObj& obj) {
         std::stringstream ss;
         if(obj.getValue().has_value())
         {

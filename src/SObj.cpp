@@ -2,14 +2,12 @@
 // Created by pgkg on 14.11.2020.
 //
 
-#include "bencode.h"
-#include <sstream>
+#include "SObj.h"
 #include <algorithm>
 #include <iostream>
+#include "Exceptions.h"
 namespace serializer
 {
-    //{Sint, Sint}
-    //
     SObj::SObj(int val) : _value(std::in_place, std::in_place_type<SInt>, val), _type(Type::Int) {}
 
     SObj::SObj(const char *val) {
@@ -22,8 +20,6 @@ namespace serializer
             _type = Type::Null;
         }
     }
-
-    SObj::SObj(SData val) : _value(val) {}
 
     SObj::SObj(double val) : _value(std::in_place, std::in_place_type<SDouble>, val), _type(Type::Double){}
 
@@ -201,7 +197,7 @@ namespace serializer
             return std::get<SArray>(_value.value());
         }else
         {
-            BadType();
+            throw BadType();
         }
     }
 
