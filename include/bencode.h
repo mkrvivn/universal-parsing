@@ -14,6 +14,9 @@
 #include "exception.h"
 #include <sstream>
 #include <string>
+#include <optional>
+#include "MethodExistenceCheck.h"
+#include <type_traits>
 namespace parser
 {
     class BencodeParser;
@@ -22,7 +25,9 @@ namespace parser
 
 namespace serializer
 {
+    class SBoolean;
     class SInt;
+    class SDouble;
     class SString;
     class SArray;
     class SDict;
@@ -31,52 +36,85 @@ namespace serializer
 
 namespace parser
 {
-    struct BencodeParser
+    struct DefaultParser
     {
-        using SelfType = BencodeParser;
+        using SelfType = DefaultParser;
+        static std::string NullToText();
+        static std::string BooleanToText(serializer::SBoolean b);
         static std::string IntToText(serializer::SInt i);
+        static std::string DoubleToText(serializer::SDouble d);
         static std::string StringToText(serializer::SString str);
         static std::string ArrayToText(serializer::SArray str);
         static std::string DictToText(serializer::SDict str);
         static std::string ObjToText(serializer::SObj obj);
+        static std::string pretty(serializer::SObj obj);
+    };
+    struct BencodeParser
+    {
+        using SelfType = BencodeParser;
+        static std::string NullToText();
+        static std::string BooleanToText(serializer::SBoolean b);
+        static std::string IntToText(serializer::SInt i);
+        static std::string DoubleToText(serializer::SDouble d);
+        static std::string StringToText(serializer::SString str);
+        static std::string ArrayToText(serializer::SArray str);
+        static std::string DictToText(serializer::SDict str);
+        static std::string ObjToText(serializer::SObj obj);
+        static std::string pretty(serializer::SObj obj);
         static serializer::SObj parse(char*& ptr);
     private:
         static serializer::SObj parseDict(char*& ptr);
         static serializer::SObj parseArray(char*& ptr);
         static serializer::SObj parseString(char*& ptr);
         static serializer::SObj parseInt(char*& ptr);
-
     };
     struct JsonParser
     {
         using SelfType = JsonParser;
+        static std::string NullToText();
+        static std::string BooleanToText(serializer::SBoolean b);
         static std::string IntToText(serializer::SInt i);
+        static std::string DoubleToText(serializer::SDouble d);
         static std::string StringToText(serializer::SString str);
         static std::string ArrayToText(serializer::SArray str);
         static std::string DictToText(serializer::SDict str);
         static std::string ObjToText(serializer::SObj obj);
+        static std::string pretty(serializer::SObj obj);
+        static serializer::SObj parse(char*& ptr);
+    private:
+        static serializer::SObj parseDict(char*& ptr);
+        static serializer::SObj parseArray(char*& ptr);
+        static serializer::SObj parseString(char*& ptr);
+        static serializer::SObj parseNum(char*& ptr);
+        static serializer::SObj parseRaw(char*& ptr);
+    };
+    struct GetRouteParser
+    {
+        using SelfType = GetRouteParser;
+        static std::string NullToText();
+        static std::string BooleanToText(serializer::SBoolean b);
+        static std::string IntToText(serializer::SInt i);
+        static std::string DoubleToText(serializer::SDouble d);
+        static std::string StringToText(serializer::SString str);
+        static std::string ArrayToText(serializer::SArray str);
+        static std::string DictToText(serializer::SDict str);
+        static std::string ObjToText(serializer::SObj obj);
+        static std::string pretty(serializer::SObj obj);
+        static serializer::SObj parse(char*& schema, char*& ptr);
+    private:
+        static serializer::SObj parseDict(char*& ptr);
+        static serializer::SObj parseArray(char*& ptr);
+        static serializer::SObj parseString(char*& ptr);
+        static serializer::SObj parseNum(char*& ptr);
+        static serializer::SObj parseRaw(char*& ptr);
     };
 }
 
 namespace serializer
 {
 
-    class SValue
-    {
-    public:
-        virtual std::string encode() const = 0;
-    };
-
-
-    typedef std::shared_ptr<SInt> IntPtr;
-    typedef std::shared_ptr<SString> StringPtr;
-    typedef std::shared_ptr<SArray> ArrayPtr;
-    typedef std::shared_ptr<SDict> DictPtr;
-
-
-
-    typedef std::variant<SInt, SString, SArray, SDict> SData;
-
+    typedef std::variant<SBoolean, SInt, SDouble, SString, SArray, SDict> SData;
+    typedef std::optional<SData> SDataOpt;
     class SInt
     {
     public:
@@ -89,6 +127,34 @@ namespace serializer
         static SInt createInt(int);
     private:
         int _value;
+    };
+
+    class SDouble
+    {
+    public:
+        SDouble(){};
+        SDouble(double val);
+        template<class Parser>
+        std::string encode() const;
+        operator double () const;
+        double getValue() const;
+        static SDouble createDouble(double);
+    private:
+        double _value;
+    };
+
+    class SBoolean
+    {
+    public:
+        SBoolean(){};
+        SBoolean(bool val);
+        template<class Parser>
+        std::string encode() const;
+        operator bool() const;
+        bool getValue() const;
+        static SBoolean createBoolean(bool);
+    private:
+        bool _value;
     };
 
     class SString
@@ -152,24 +218,28 @@ namespace serializer
 
     enum class Type
     {
-        String,
+        Null,
+        Boolean,
         Int,
+        Double,
+        String,
         Array,
         Pair,
         Dict
 
     };
 
-    typedef std::shared_ptr<SObj> ObjPtr;
-
     class SObj
     {
     public:
         SObj(){};
         SObj(int val);
+        SObj(double val);
         SObj(const char* val);
         SObj(SData val);
+        SObj(SBoolean);
         SObj(SInt i);
+        SObj(SDouble d);
         SObj(SString s);
         SObj(SArray a);
         SObj(SDict d);
@@ -178,45 +248,103 @@ namespace serializer
         std::string encode() const;
         SObj& operator[](int pos);
         SObj& operator[](const char* key);
-        SData getValue() const;
+        SDataOpt getValue() const;
+        operator void*() const;
+        operator bool() const;
         operator int() const;
+        operator double() const;
         operator std::string() const;
+        operator SBoolean() const;
         operator SInt() const;
+        operator SDouble() const;
         operator SString() const;
         operator SArray() const;
         operator SDict() const;
     private:
         Type _type;
         mutable std::string _cache;
-        SData _value;
+        std::optional<SData> _value;
     private:
         template<class Parser>
         std::string cache() const;
     };
 
+    template <class Parser>
+    std::string SBoolean::encode() const {
+        if constexpr (is_exist_boolean<Parser, std::string(SBoolean)>::value)
+        {
+            return Parser::BooleanToText(*this);
+        }else
+        {
+            return parser::DefaultParser::BooleanToText(*this);
+        }
+
+    }
+
     template<class Parser>
     std::string SInt::encode() const {
-        return Parser::IntToText(*this);
+        if constexpr (is_exist_int<Parser, std::string(SInt)>::value)
+        {
+            return Parser::IntToText(*this);
+        }else
+        {
+            return parser::DefaultParser::IntToText(*this);
+        }
+    }
+
+    template<class Parser>
+    std::string SDouble::encode() const {
+        if constexpr (is_exist_double<Parser, std::string(SDouble)>::value)
+        {
+            return Parser::DoubleToText(*this);
+        }else
+        {
+            return parser::DefaultParser::DoubleToText(*this);
+        }
     }
 
     template<class Parser>
     std::string SString::encode() const {
-        return Parser::StringToText(*this);
+        if constexpr (is_exist_string<Parser, std::string(SString)>::value)
+        {
+            return Parser::StringToText(*this);
+        }else
+        {
+            return parser::DefaultParser::StringToText(*this);
+        }
     }
 
     template<class Parser>
     std::string SDict::encode() const {
-        return Parser::DictToText(*this);
+        if constexpr (is_exist_dict<Parser, std::string(SDict)>::value)
+        {
+            return Parser::DictToText(*this);
+        }else
+        {
+            return parser::DefaultParser::DictToText(*this);
+        }
     }
 
     template<class Parser>
     std::string SArray::encode() const {
-        return Parser::ArrayToText(*this);
+        if constexpr (is_exist_array<Parser, std::string(SArray)>::value)
+        {
+            return Parser::ArrayToText(*this);
+        }else
+        {
+            return parser::DefaultParser::ArrayToText(*this);
+        }
     }
 
     template<class Parser>
     std::string SObj::cache() const {
-        return Parser::ObjToText(*this);
+        if constexpr (is_exist_obj<Parser, std::string(SObj)>::value)
+        {
+            return Parser::ObjToText(*this);
+        }else
+        {
+            return parser::DefaultParser::ObjToText(*this);
+        }
     }
 
     template<class Parser>

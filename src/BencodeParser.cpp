@@ -2,10 +2,19 @@
 // Created by pgkg on 16.11.2020.
 //
 #include "bencode.h"
+#include <cmath>
 namespace parser
 {
+    std::string BencodeParser::BooleanToText(serializer::SBoolean b) {
+        return "";
+    }
+
     std::string BencodeParser::IntToText(serializer::SInt i) {
         return "i" + std::to_string(i.getValue()) + "e";
+    }
+
+    std::string BencodeParser::DoubleToText(serializer::SDouble i) {
+        return "i" + std::to_string(floor(i.getValue())) + "e";
     }
 
     std::string BencodeParser::StringToText(serializer::SString str) {
@@ -37,8 +46,17 @@ namespace parser
 
     std::string BencodeParser::ObjToText(serializer::SObj obj) {
         std::stringstream ss;
-        ss << std::visit([](auto&& item){return item.template encode<SelfType>();}, obj.getValue());
+        if(obj.getValue().has_value())
+        {
+            ss << std::visit([](auto&& item){return item.template encode<SelfType>();}, obj.getValue().value());
+        }
+
+
         return ss.str();
+    }
+
+    std::string BencodeParser::pretty(serializer::SObj obj) {
+        return obj.encode<SelfType>();
     }
 
     serializer::SObj BencodeParser::parse(char*& ptr) {
@@ -56,6 +74,9 @@ namespace parser
             }else if(*ptr == 'i')
             {
                 return parseInt(++ptr);
+            }else
+            {
+                throw std::runtime_error("parsing error");
             }
         }
     }

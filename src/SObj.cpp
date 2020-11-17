@@ -10,19 +10,34 @@ namespace serializer
 {
     //{Sint, Sint}
     //
-    SObj::SObj(int val) : _value(std::in_place_type<SInt>, val), _type(Type::Int) {}
+    SObj::SObj(int val) : _value(std::in_place, std::in_place_type<SInt>, val), _type(Type::Int) {}
 
-    SObj::SObj(const char *val) : _value(std::in_place_type<SString>, val), _type(Type::String) {}
+    SObj::SObj(const char *val) {
+        if(val != nullptr)
+        {
+            _value = SData(std::in_place_type<SString>, val);
+            _type = Type::String;
+        }else
+        {
+            _type = Type::Null;
+        }
+    }
 
     SObj::SObj(SData val) : _value(val) {}
 
-    SObj::SObj(SInt i) : _value(std::in_place_type<SInt>, i), _type(Type::Int){}
+    SObj::SObj(double val) : _value(std::in_place, std::in_place_type<SDouble>, val), _type(Type::Double){}
 
-    SObj::SObj(SString s) : _value(std::in_place_type<SString>, s), _type(Type::String) {}
+    SObj::SObj(SInt i) : _value(std::in_place, std::in_place_type<SInt>, i), _type(Type::Int){}
 
-    SObj::SObj(SArray a) : _value(std::in_place_type<SArray>, a), _type(Type::Array) {}
+    SObj::SObj(SDouble d) : _value(std::in_place, std::in_place_type<SDouble>, d), _type(Type::Double){}
 
-    SObj::SObj(SDict d) : _value(std::in_place_type<SDict>, d), _type(Type::Dict) {}
+    SObj::SObj(SBoolean b) : _value(b), _type(Type::Boolean) {}
+
+    SObj::SObj(SString s) : _value(std::in_place, std::in_place_type<SString>, s), _type(Type::String) {}
+
+    SObj::SObj(SArray a) : _value(std::in_place, std::in_place_type<SArray>, a), _type(Type::Array) {}
+
+    SObj::SObj(SDict d) : _value(std::in_place, std::in_place_type<SDict>, d), _type(Type::Dict) {}
 
     SObj::SObj(std::initializer_list<SObj> il) { // <-!!!!!!!!!!!!!!! SObj or ObjPtr???????????
         try {
@@ -43,8 +58,8 @@ namespace serializer
                     MapPtr map = std::make_shared<DictMap>();
                     for(auto i : il)
                     {
-                        SArray arr = std::get<SArray>(i._value);
-                        map->emplace(std::get<SString>(arr[0]._value), arr[1]); //!!!!!!!!!!!!!!!
+                        SArray arr = std::get<SArray>(i._value.value());
+                        map->emplace(std::get<SString>(arr[0]._value.value()), arr[1]); //!!!!!!!!!!!!!!!
                     }
                     _value = SDict(map);
                     _type = Type::Dict;
@@ -66,14 +81,14 @@ namespace serializer
 
     }
 
-    SData SObj::getValue() const {
+    SDataOpt SObj::getValue() const {
         return _value;
     }
 
     SObj& SObj::operator[](int pos) {
         if(_type == Type::Array)
         {
-            return std::get<SArray>(_value)[pos];
+            return std::get<SArray>(_value.value())[pos];
         }else{
             throw BadType();
         }
@@ -82,8 +97,27 @@ namespace serializer
     SObj& SObj::operator[](const char* key) {
         if(_type == Type::Dict)
         {
-            return std::get<SDict>(_value)[key];
+            return std::get<SDict>(_value.value())[key];
         }else{
+            throw BadType();
+        }
+    }
+
+    SObj::operator void *() const {
+        if(_type == Type::Null)
+        {
+            return nullptr;
+        }else
+        {
+            throw BadType();
+        }
+    }
+
+    SObj::operator bool() const {
+        if(_type == Type::Boolean){
+            return std::get<SBoolean>(_value.value()).getValue();
+        }else
+        {
             throw BadType();
         }
     }
@@ -91,7 +125,17 @@ namespace serializer
     SObj::operator int() const
     {
         if(_type == Type::Int){
-            return std::get<SInt>(_value);
+            return std::get<SInt>(_value.value()).getValue();
+        }else
+        {
+            throw BadType();
+        }
+    }
+
+    SObj::operator double() const {
+        if(_type == Type::Double)
+        {
+            return std::get<SDouble>(_value.value()).getValue();
         }else
         {
             throw BadType();
@@ -101,27 +145,50 @@ namespace serializer
     SObj::operator std::string() const {
         if(_type == Type::String)
         {
-            return std::get<SString>(_value);
+            return std::get<SString>(_value.value());
         }else
         {
             throw BadType();
         }
+    }
+
+    SObj::operator SBoolean() const {
+        if(_type == Type::Boolean)
+        {
+            return std::get<SBoolean>(_value.value());
+        }else
+        {
+            throw BadType();
+        }
+
     }
 
     SObj::operator SInt() const {
         if(_type == Type::Int)
         {
-            return std::get<SInt>(_value);
+            return std::get<SInt>(_value.value());
         }else
         {
             throw BadType();
         }
     }
 
+    SObj::operator SDouble() const {
+        if(_type == Type::Double)
+        {
+            return std::get<SDouble>(_value.value());
+        }else
+        {
+            throw BadType();
+        }
+    }
+
+
+
     SObj::operator SString() const {
         if(_type == Type::String)
         {
-            return std::get<SString>(_value);
+            return std::get<SString>(_value.value());
         }else
         {
             throw BadType();
@@ -131,7 +198,7 @@ namespace serializer
     SObj::operator SArray() const {
         if(_type == Type::Array)
         {
-            return std::get<SArray>(_value);
+            return std::get<SArray>(_value.value());
         }else
         {
             BadType();
@@ -141,7 +208,7 @@ namespace serializer
     SObj::operator SDict() const {
         if(_type == Type::Dict)
         {
-            return std::get<SDict>(_value);
+            return std::get<SDict>(_value.value());
         }else
         {
             throw BadType();
