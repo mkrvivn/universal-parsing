@@ -6,6 +6,7 @@
 #include <limits>
 namespace parser
 {
+
     std::string JsonParser::BooleanToText(serializer::SBoolean b) {
         return b.getValue() ? "true" : "false";
     }
@@ -76,32 +77,32 @@ namespace parser
         return ss.str();
     }
 
-    serializer::SObj JsonParser::parseRaw(char *&ptr) {
+    serializer::SObj JsonParser::parseRaw(std::string::const_iterator& it, std::string::const_iterator& it_end) {
 
-        if(*ptr == 'n')
+        if(*it == 'n')
         {
-            ptr += 4;
+            it += 4;
             return serializer::SObj(nullptr);
-        }else if(*ptr == 't')
+        }else if(*it == 't')
         {
-            ptr += 4;
+            it += 4;
             return serializer::SBoolean::createBoolean(true);
-        }else if(*ptr == 'f')
+        }else if(*it == 'f')
         {
-            ptr += 5;
+            it += 5;
             return serializer::SBoolean::createBoolean(false);
         }
     }
 
-    serializer::SObj JsonParser::parseNum(char *&ptr) {
+    serializer::SObj JsonParser::parseNum(std::string::const_iterator& it, std::string::const_iterator& it_end) {
         bool isDouble = false;
-        auto start = ptr;
-        while(isdigit(*ptr) || *ptr == '.' || *ptr == '-')
+        auto start = it;
+        while(isdigit(*it) || *it == '.' || *it == '-')
         {
-            isDouble = (*ptr == '.' ? true : false);
-            ptr++;
+            isDouble = (*it == '.' ? true : false);
+            it++;
         }
-        std::string sub(start, ptr - start);
+        std::string sub(start.base(), it - start);
         if(isDouble)
         {
             return serializer::SDouble::createDouble(std::stod(sub));
@@ -117,65 +118,71 @@ namespace parser
         }
     }
 
-    serializer::SObj JsonParser::parseString(char *&ptr) {
-        auto start = ++ptr;
-        while((*ptr != '\"') || (*(ptr - 1) == '\\'))
+    serializer::SObj JsonParser::parseString(std::string::const_iterator& it, std::string::const_iterator& it_end) {
+        auto start = ++it;
+        while((*it != '\"') || (*(it - 1) == '\\'))
         {
-            ptr++;
+            it++;
         }
-        std::string sub(start, ptr - start);
-        ptr++;
+        std::string sub(start.base(), it - start);
+        it++;
         return serializer::SString::createString(sub);
     }
 
-    serializer::SObj JsonParser::parseArray(char *&ptr) {
+    serializer::SObj JsonParser::parseArray(std::string::const_iterator& it, std::string::const_iterator& it_end) {
         serializer::SArray a = serializer::SArray::createArray();
-        while(*ptr != ']')
+        while(*it != ']')
         {
-            serializer::SObj o = parse(ptr);
+            serializer::SObj o = parseObj(it, it_end);
             a.pushBack(o);
-            ptr += *ptr == ',' ? 2 : 0;
+            it += *it == ',' ? 2 : 0;
         }
-        ptr++;
+        it++;
         return serializer::SObj(a);
     }
 
-    serializer::SObj JsonParser::parseDict(char *&ptr) {
+    serializer::SObj JsonParser::parseDict(std::string::const_iterator& it, std::string::const_iterator& it_end) {
         serializer::SDict d = serializer::SDict::createDict();
-        while(*ptr != '}')
+        while(*it != '}')
         {
-            serializer::SString s = parseString(ptr);
-            ptr += 2;
-            serializer::SObj o = parse(ptr);
+            serializer::SString s = parseString(it, it_end);
+            it += 2;
+            serializer::SObj o = parseObj(it, it_end);
             d.insert(s, o);
-            ptr += *ptr == ',' ? 2 : 0;
+            it += *it == ',' ? 2 : 0;
         }
-        ptr++;
+        it++;
         return serializer::SObj(d);
     }
 
-    serializer::SObj JsonParser::parse(char *&ptr) {
-        while(*ptr != '\0')
+    serializer::SObj JsonParser::parseObj(std::string::const_iterator& it, std::string::const_iterator& it_end) {
+        while(it != it_end)
         {
-            if(*ptr == '{')
+            if(*it == '{')
             {
-                return parseDict(++ptr);
-            }else if(*ptr == '[')
+                return parseDict(++it, it_end);
+            }else if(*it == '[')
             {
-                return parseArray(++ptr);
-            }else if(*ptr == '\"')
+                return parseArray(++it, it_end);
+            }else if(*it == '\"')
             {
-                return parseString(ptr);
-            }else if(isdigit(*ptr) || *ptr == '-')
+                return parseString(it, it_end);
+            }else if(isdigit(*it) || *it == '-')
             {
-                return parseNum(ptr);
-            }else if(*ptr == 't' || *ptr == 'f' || *ptr == 'n')
+                return parseNum(it, it_end);
+            }else if(*it == 't' || *it == 'f' || *it == 'n')
             {
-                return parseRaw(ptr);
+                return parseRaw(it, it_end);
             }else
             {
                 throw std::runtime_error("parsing failed");
             }
         }
+    }
+
+    serializer::SObj JsonParser::parse(const std::string& str) {
+        auto it = str.cbegin();
+        auto it_end = str.cend();
+        return parseObj(it, it_end);
     }
 }

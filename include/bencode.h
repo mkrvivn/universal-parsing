@@ -60,13 +60,13 @@ namespace parser
         static std::string ArrayToText(serializer::SArray str);
         static std::string DictToText(serializer::SDict str);
         static std::string ObjToText(serializer::SObj obj);
-        static std::string pretty(serializer::SObj obj);
-        static serializer::SObj parse(char*& ptr);
+        static serializer::SObj parse(const std::string & str);
     private:
-        static serializer::SObj parseDict(char*& ptr);
-        static serializer::SObj parseArray(char*& ptr);
-        static serializer::SObj parseString(char*& ptr);
-        static serializer::SObj parseInt(char*& ptr);
+        static serializer::SObj parseObj(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseDict(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseArray(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseString(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseInt(std::string::const_iterator& it, std::string::const_iterator& it_end);
     };
     struct JsonParser
     {
@@ -79,14 +79,14 @@ namespace parser
         static std::string ArrayToText(serializer::SArray str);
         static std::string DictToText(serializer::SDict str);
         static std::string ObjToText(serializer::SObj obj);
-        static std::string pretty(serializer::SObj obj);
-        static serializer::SObj parse(char*& ptr);
+        static serializer::SObj parse(const std::string & str);
     private:
-        static serializer::SObj parseDict(char*& ptr);
-        static serializer::SObj parseArray(char*& ptr);
-        static serializer::SObj parseString(char*& ptr);
-        static serializer::SObj parseNum(char*& ptr);
-        static serializer::SObj parseRaw(char*& ptr);
+        static serializer::SObj parseObj(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseDict(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseArray(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseString(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseNum(std::string::const_iterator& it, std::string::const_iterator& it_end);
+        static serializer::SObj parseRaw(std::string::const_iterator& it, std::string::const_iterator& it_end);
     };
     struct GetRouteParser
     {
@@ -166,6 +166,10 @@ namespace serializer
         std::string encode() const;
         operator std::string() const;
         std::string& getValue() const;
+        bool operator<(const SString& rhs) const
+        {
+            return *_value < rhs.getValue();
+        }
         bool operator==(const SString& rhs) const
         {
             return *_value == *rhs._value;
@@ -181,7 +185,7 @@ namespace serializer
     };
 
     typedef std::vector<SObj> ArrayVector;
-    typedef std::unordered_map<SString, SObj, SString::hash> DictMap;
+    typedef std::map<SString, SObj> DictMap;
 
     typedef std::shared_ptr<ArrayVector> VectorPtr;
     typedef std::shared_ptr<DictMap> MapPtr;

@@ -55,25 +55,27 @@ namespace parser
         return ss.str();
     }
 
-    std::string BencodeParser::pretty(serializer::SObj obj) {
-        return obj.encode<SelfType>();
+    serializer::SObj BencodeParser::parse(const std::string& str) {
+        auto it = str.cbegin();
+        auto it_end = str.cend();
+        return parseObj(it, it_end);
     }
 
-    serializer::SObj BencodeParser::parse(char*& ptr) {
-        while(*ptr != '\0')
+    serializer::SObj BencodeParser::parseObj(std::string::const_iterator& it, std::string::const_iterator& it_end) {
+        while(it != it_end)
         {
-            if(*ptr == 'd')
+            if(*it == 'd')
             {
-                return parseDict(++ptr);
-            }else if(*ptr == 'l')
+                return parseDict(++it, it_end);
+            }else if(*it == 'l')
             {
-                return parseArray(++ptr);
-            }else if(*ptr == isdigit(*ptr))
+                return parseArray(++it, it_end);
+            }else if(*it == isdigit(*it))
             {
-                return parseString(++ptr);
-            }else if(*ptr == 'i')
+                return parseString(++it, it_end);
+            }else if(*it == 'i')
             {
-                return parseInt(++ptr);
+                return parseInt(++it, it_end);
             }else
             {
                 throw std::runtime_error("parsing error");
@@ -81,50 +83,50 @@ namespace parser
         }
     }
 
-    serializer::SObj BencodeParser::parseDict(char*& ptr) {
+    serializer::SObj BencodeParser::parseDict(std::string::const_iterator& it, std::string::const_iterator& it_end) {
         serializer::SDict d = serializer::SDict::createDict();
-        while(*ptr != 'e')
+        while(*it != 'e')
         {
-            serializer::SString s = parseString(ptr);
-            serializer::SObj o = parse(ptr);
+            serializer::SString s = parseString(it, it_end);
+            serializer::SObj o = parseObj(it, it_end);
             d.insert(s, o);
         }
-        ptr++;
+        it++;
         return serializer::SObj(d);
     }
 
-    serializer::SObj BencodeParser::parseArray(char*& ptr) {
+    serializer::SObj BencodeParser::parseArray(std::string::const_iterator& it, std::string::const_iterator& it_end) {
         serializer::SArray a = serializer::SArray::createArray();
-        while(*ptr != 'e')
+        while(*it != 'e')
         {
-            serializer::SObj o = parse(ptr);
+            serializer::SObj o = parseObj(it, it_end);
             a.pushBack(o);
         }
-        ptr++;
+        it++;
         return serializer::SObj(a);
     }
 
-    serializer::SObj BencodeParser::parseString(char*& ptr) {
-        auto start = ptr;
-        while(*ptr != ':')
+    serializer::SObj BencodeParser::parseString(std::string::const_iterator& it, std::string::const_iterator& it_end) {
+        auto start = it;
+        while(*it != ':')
         {
-            ptr++;
+            it++;
         }
-        int len = std::stoi(std::string(start, ptr - start));
-        ptr++;
-        std::string sub(ptr, len);
-        ptr = ptr + len;
+        int len = std::stoi(std::string(start.base(), it - start));
+        it++;
+        std::string sub(it.base(), len);
+        it = it + len;
         return serializer::SString::createString(sub);
     }
 
-    serializer::SObj BencodeParser::parseInt(char*& ptr) {
-        auto start = ptr;
-        while(*ptr != 'e')
+    serializer::SObj BencodeParser::parseInt(std::string::const_iterator& it, std::string::const_iterator& it_end) {
+        auto start = it;
+        while(*it != 'e')
         {
-            ptr++;
+            it++;
         }
-        std::string sub(start, ptr - start); //?????
-        ptr++;
+        std::string sub(start.base(), it - start); //?????
+        it++;
         return serializer::SInt::createInt(std::stoi(sub));
     }
 }
