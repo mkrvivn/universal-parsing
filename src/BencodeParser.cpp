@@ -4,6 +4,8 @@
 #include "BencodeParser.h"
 #include <cmath>
 #include <sstream>
+#include <iostream>
+
 namespace parser
 {
     std::string BencodeParser::BooleanToText(const serializer::SBoolean& b) {
@@ -50,6 +52,9 @@ namespace parser
         if(obj.getValue().has_value())
         {
             ss << std::visit([](auto&& item){return item.template encode<SelfType>();}, obj.getValue().value());
+        }else
+        {
+            throw std::runtime_error("null obj in bencode parser");
         }
 
 
@@ -71,9 +76,9 @@ namespace parser
             }else if(*it == 'l')
             {
                 return parseArray(++it, it_end);
-            }else if(*it == isdigit(*it))
+            }else if(isdigit(*it))
             {
-                return parseString(++it, it_end);
+                return parseString(it, it_end);
             }else if(*it == 'i')
             {
                 return parseInt(++it, it_end);

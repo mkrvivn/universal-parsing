@@ -37,12 +37,10 @@ namespace serializer
 
     SObj::SObj(SDict d) : _value(std::in_place, std::in_place_type<SDict>, d), _type(Type::Dict) {}
 
-    SObj::SObj(std::initializer_list<SObj> il) { // <-!!!!!!!!!!!!!!! SObj or ObjPtr???????????
-        try {
+    SObj::SObj(std::initializer_list<SObj> il) {
             if(il.size() == 2 && il.begin()->_type == Type::String)
             {
-                VectorPtr arr = std::make_shared<ArrayVector>(il.begin(), il.end());
-                _value = SArray(arr); //<--- !!!!!!!!!!!!
+                _value = SArray(std::make_shared<ArrayVector>(il.begin(), il.end())); //<--- !!!!!!!!!!!!
                 _type = Type::Pair;
                 return;
             }else
@@ -73,10 +71,6 @@ namespace serializer
                     _type = Type::Array;
                 }
             }
-        } catch (...) {
-            std::cout << "something wnt wrong";
-        }
-
     }
 
     SDataOpt SObj::getValue() const {
