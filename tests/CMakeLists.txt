@@ -1,0 +1,8 @@
+if(BuildTests)
+    cmake_minimum_required(VERSION 2.6)
+    project(tests)
+    find_library(gtest REQUIRED)
+    add_executable(tests_run SObjTest.cpp)
+    target_link_libraries(tests_run gtest gtest_main bencode)
+    add_test(tests_run tests_run)
+endif()

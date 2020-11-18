@@ -8,6 +8,8 @@
 #include "Exceptions.h"
 namespace serializer
 {
+    SObj::SObj(bool val) : _value(std::in_place, std::in_place_type<SBoolean>, val), _type(Type::Boolean) {}
+
     SObj::SObj(int val) : _value(std::in_place, std::in_place_type<SInt>, val), _type(Type::Int) {}
 
     SObj::SObj(const char *val) {

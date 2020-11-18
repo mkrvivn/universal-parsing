@@ -17,6 +17,7 @@ namespace serializer
     {
     public:
         SObj() = default;
+        SObj(bool val);
         SObj(int val);
         SObj(double val);
         SObj(const char* val);
