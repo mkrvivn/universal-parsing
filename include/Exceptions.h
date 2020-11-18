@@ -5,11 +5,26 @@
 #ifndef BENCODE_EXCEPTIONS_H
 #define BENCODE_EXCEPTIONS_H
 #include <exception>
-class BadType : public std::exception
+namespace serializer
 {
-    const char* what() const throw ()
+    namespace exceptions
     {
-        return "Wrong access type";
+        class BadType : public std::exception
+        {
+            const char* what() const throw ()
+            {
+                return "Wrong access type";
+            }
+        };
+
+        class ParsingFailed : public std::exception
+        {
+            const char* what() const throw ()
+            {
+                return "Parsing Failed";
+            }
+        };
     }
-};
+}
+
 #endif //BENCODE_EXCEPTIONS_H

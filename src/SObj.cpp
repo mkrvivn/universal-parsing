@@ -8,6 +8,8 @@
 #include "Exceptions.h"
 namespace serializer
 {
+    SObj::SObj() : _type(Type::Null) {}
+    
     SObj::SObj(bool val) : _value(std::in_place, std::in_place_type<SBoolean>, val), _type(Type::Boolean) {}
 
     SObj::SObj(int val) : _value(std::in_place, std::in_place_type<SInt>, val), _type(Type::Int) {}
@@ -82,7 +84,7 @@ namespace serializer
         {
             return std::get<SArray>(_value.value())[pos];
         }else{
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -91,7 +93,7 @@ namespace serializer
         {
             return std::get<SDict>(_value.value())[key];
         }else{
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -101,7 +103,7 @@ namespace serializer
             return nullptr;
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -110,7 +112,7 @@ namespace serializer
             return std::get<SBoolean>(_value.value()).getValue();
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -120,7 +122,7 @@ namespace serializer
             return std::get<SInt>(_value.value()).getValue();
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -130,7 +132,7 @@ namespace serializer
             return std::get<SDouble>(_value.value()).getValue();
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -140,7 +142,7 @@ namespace serializer
             return std::get<SString>(_value.value());
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -150,7 +152,7 @@ namespace serializer
             return std::get<SBoolean>(_value.value());
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
 
     }
@@ -161,7 +163,7 @@ namespace serializer
             return std::get<SInt>(_value.value());
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -171,7 +173,7 @@ namespace serializer
             return std::get<SDouble>(_value.value());
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -183,7 +185,7 @@ namespace serializer
             return std::get<SString>(_value.value());
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -193,7 +195,7 @@ namespace serializer
             return std::get<SArray>(_value.value());
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 
@@ -203,7 +205,7 @@ namespace serializer
             return std::get<SDict>(_value.value());
         }else
         {
-            throw BadType();
+            throw serializer::exceptions::BadType();
         }
     }
 

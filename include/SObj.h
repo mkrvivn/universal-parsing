@@ -16,7 +16,7 @@ namespace serializer
     class SObj
     {
     public:
-        SObj() = default;
+        SObj();
         SObj(bool val);
         SObj(int val);
         SObj(double val);

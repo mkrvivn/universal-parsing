@@ -5,6 +5,7 @@
 #include "JsonParser.h"
 #include <limits>
 #include <sstream>
+#include "Exceptions.h"
 namespace parser
 {
 
@@ -92,6 +93,8 @@ namespace parser
         {
             it += 5;
             return serializer::SBoolean::createBoolean(false);
+        }else{
+            throw serializer::exceptions::ParsingFailed();
         }
     }
 
@@ -176,7 +179,7 @@ namespace parser
                 return parseRaw(it, it_end);
             }else
             {
-                throw std::runtime_error("parsing failed");
+                throw serializer::exceptions::ParsingFailed();
             }
         }
     }

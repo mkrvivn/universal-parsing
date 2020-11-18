@@ -5,7 +5,7 @@
 #include <cmath>
 #include <sstream>
 #include <iostream>
-
+#include "Exceptions.h"
 namespace parser
 {
     std::string BencodeParser::BooleanToText(const serializer::SBoolean& b) {
@@ -54,7 +54,7 @@ namespace parser
             ss << std::visit([](auto&& item){return item.template encode<SelfType>();}, obj.getValue().value());
         }else
         {
-            throw std::runtime_error("null obj in bencode parser");
+            throw serializer::exceptions::ParsingFailed();
         }
 
 
@@ -84,7 +84,7 @@ namespace parser
                 return parseInt(++it, it_end);
             }else
             {
-                throw std::runtime_error("parsing error");
+                throw serializer::exceptions::ParsingFailed();
             }
         }
     }
